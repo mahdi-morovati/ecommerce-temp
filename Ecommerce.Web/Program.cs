@@ -1,8 +1,10 @@
 using Ecommerce.Identity.Data;
+using Ecommerce.Identity.Entities;
 using Ecommerce.Infrastructure;
 using Ecommerce.Infrastructure.Data;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Serilog;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -15,9 +17,16 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 builder.Services.AddDbContext<UserIdentityDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
-builder.Services.AddIdentity<IdentityUser, IdentityRole>()
+builder.Services.AddIdentity<ApplicationUser, IdentityRole>()
     .AddEntityFrameworkStores<UserIdentityDbContext>()
     .AddDefaultTokenProviders();
+
+Log.Logger = new LoggerConfiguration()
+    .WriteTo.Console()
+    .WriteTo.File("logs/log.txt", rollingInterval: RollingInterval.Day)
+    .CreateLogger();
+
+builder.Host.UseSerilog();
 
 
 var app = builder.Build();
